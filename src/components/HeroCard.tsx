@@ -13,51 +13,62 @@ const HeroCard = () => {
     const endDate = new Date("2025-06-01");
     const [isFlipped, setIsFlipped] = useState(false);
     const [amount, setAmount] = useState(0);
+    const [mounted, setMounted] = useState(false);
+    const [timeLeft, setTimeLeft] = useState({
+        days: "00",
+        hours: "00",
+        minutes: "00",
+        seconds: "00",
+    });
+
     const handleFlip = () => {
         setIsFlipped(!isFlipped);
     };
 
-
     const DOLLAR_COST = amount * ETH_PRICE_IN_USD;
     const GET_AMOUNT = DOLLAR_COST * 1000;
 
-    const calculateTimeRemaining = () => {
-        const now = new Date();
-        let diff = endDate.getTime() - now.getTime();
-
-        // If the end date has passed, show zeros.
-        if (diff < 0) diff = 0;
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        diff -= days * 1000 * 60 * 60 * 24;
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        diff -= hours * 1000 * 60 * 60;
-        const minutes = Math.floor(diff / (1000 * 60));
-        diff -= minutes * 1000 * 60;
-        const seconds = Math.floor(diff / 1000);
-
-        return { days, hours, minutes, seconds };
-    };
-
-    const [timeLeft, setTimeLeft] = useState(calculateTimeRemaining());
-
     useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeft(calculateTimeRemaining());
-        }, 1000);
+        setMounted(true);
+
+        const updateTime = () => {
+            const now = new Date();
+            const diff = endDate.getTime() - now.getTime();
+
+            if (diff <= 0) {
+                setTimeLeft({ days: "00", hours: "00", minutes: "00", seconds: "00" });
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / (1000 * 60)) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            setTimeLeft({
+                days: days.toString().padStart(2, "0"),
+                hours: hours.toString().padStart(2, "0"),
+                minutes: minutes.toString().padStart(2, "0"),
+                seconds: seconds.toString().padStart(2, "0"),
+            });
+        };
+
+        updateTime();
+        const timer = setInterval(updateTime, 1000);
 
         return () => clearInterval(timer);
     }, []);
 
-    return (
+    if (!mounted) return null;
 
-        <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
-            <div key={"front"} className="relative backdrop-blur-sm bg-opacity-10 rounded-xl p-10 ml-[65px]">
+    return (
+        <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal" containerClassName="mt-12 lg:mt-0">
+            <div key={"front"} className="relative backdrop-blur-sm bg-opacity-10 rounded-xl p-10 lg:ml-[65px]">
                 <div className="absolute inset-0 bg-[#ffffff1a] backdrop-blur-sm rounded-xl -z-10"></div>
 
                 <img className="absolute top-0 left-0 -z-20" src="/left-hero-bg.png" alt="AOT" />
                 <img className="absolute top-0 right-0 -z-20" src="/right-hero-bg.png" alt="AOT" />
-                <div className="absolute top-[-65px] left-[-65px]">
+                <div className="absolute top-[-65px] lg:left-[-65px]">
                     <div className="relative w-[130px] h-[130px]">
                         <div className="absolute inset-0 bg-[#6236ffcc] rounded-full animate-spin-slow backdrop-blur-lg "></div>
                         <div className="absolute w-full h-full flex items-center justify-center">
@@ -73,9 +84,9 @@ const HeroCard = () => {
                     </div>
                 </div>
 
-                <p className="absolute block ml-[45px] top-[20px]">STAGE 1: 20% BONUS!</p>
+                <p className="absolute block lg:ml-[45px] mt-12 lg:top-[-10px]">STAGE 1: 20% BONUS!</p>
                 <div className="z-10 mt-8">
-                    <h1 className="text-white text-lg font-bold mb-4">PRE-SALE ENDS IN</h1>
+                    <h1 className="text-white text-lg font-bold mb-4 mt-20 lg:mt-0">PRE-SALE ENDS IN</h1>
                     <div className="flex justify-between items-baseline text-white font-mono">
                         <div className="flex items-baseline">
                             <span className={`text-5xl font-bold ${outfit.className}`}>{timeLeft.days}</span>
@@ -150,13 +161,13 @@ const HeroCard = () => {
             w-full uppercase px-10 rounded-full py-4 mt-8 hover:bg-[#1ee8b7]/80 transition-colors duration-300">BUY AOT NOW</button>
                 </div>
             </div>
-            <div key={"back"} className="relative backdrop-blur-sm bg-opacity-10 rounded-xl p-10 ml-[65px]">
-                <ArrowLeft onClick={handleFlip} className="ml-[30px] cursor-pointer" weight="bold" size={33} />
+            <div key={"back"} className="relative backdrop-blur-sm bg-opacity-10 rounded-xl p-10  lg:ml-[65px]">
+                <ArrowLeft onClick={handleFlip} className="ml-[120px] lg:ml-[30px] cursor-pointer" weight="bold" size={33} />
                 <div className="absolute inset-0 bg-[#ffffff1a] backdrop-blur-sm rounded-xl -z-10"></div>
 
                 <img className="absolute top-0 left-0 -z-20" src="/left-hero-bg.png" alt="AOT" />
                 <img className="absolute top-0 right-0 -z-20" src="/right-hero-bg.png" alt="AOT" />
-                <div className="absolute top-[-65px] left-[-65px]">
+                <div className="absolute top-[-65px] lg:left-[-65px]">
                     <div className="relative w-[130px] h-[130px]">
                         <div className="absolute inset-0 bg-[#6236ffcc] rounded-full animate-spin-slow backdrop-blur-lg "></div>
                         <div className="absolute w-full h-full flex items-center justify-center">
@@ -225,7 +236,6 @@ const HeroCard = () => {
             w-full uppercase px-10 rounded-full py-4 mt-8 hover:bg-[#1ee8b7]/80 transition-colors duration-300">BUY NOW</button>
             </div>
         </ReactCardFlip>
-
     )
 }
 

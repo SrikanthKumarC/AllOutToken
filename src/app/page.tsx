@@ -1,16 +1,18 @@
 'use client'
-import Header from "@/components/Header";
+// import Header from "@/components/Header";
+const Header = dynamic(() => import("@/components/Header"), { ssr: false });
 import Image from "next/image";
 import { FileText } from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 
+
+
+// import Footer from "@/components/Footer";
 const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
-
-
 import { outfit } from "@/app/layout";
-import HeroCard from "@/components/HeroCard";
-
-export default function Home() {
+// import HeroCard from "@/components/HeroCard";
+const HeroCard = dynamic(() => import("@/components/HeroCard"), { ssr: false });
+const Home = () => {
   return (
     <div
       style={{
@@ -33,11 +35,11 @@ export default function Home() {
             <button className="text-[#1ee8b7] hover:bg-[#1ee8b64c] flex gap-2 items-center backdrop-blur-lg bg-[#1ee8b726] font-bold uppercase px-10 rounded-full py-4">
               <FileText size={24} />
               whitepaper
-              </button>
+            </button>
 
             <section className="flex flex-col mt-8 gap-4 text-[#FFFFFFCC] font-semibold">
               <h2>Total Supply: <span>100000</span></h2>
-              
+
               <h2>Soft Cap: <span>10 ETH</span></h2>
               <h2>Hard Cap: <span>40 ETH</span></h2>
             </section>
@@ -51,3 +53,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home;
