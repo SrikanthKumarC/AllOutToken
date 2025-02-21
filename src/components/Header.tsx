@@ -2,9 +2,10 @@
 "use client"
 import Image from "next/image";
 import Icon from "./Helpers/Icon";
-
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { TelegramLogo, XLogo, TwitterLogo, DiscordLogo, DotsThreeCircleVertical } from "@phosphor-icons/react";
-
+import '@rainbow-me/rainbowkit/styles.css';
+import './walletStyle.css';
 
 export default function Header() {
     return (
@@ -16,7 +17,9 @@ export default function Header() {
                 <Icon><TelegramLogo size={24} /></Icon>
                 <Icon><DiscordLogo size={24} /></Icon>
                 <Icon><XLogo size={24} /></Icon>
-                <Icon>TODO wallet</Icon>
+                <div>
+                    <ConnectButton accountStatus="address" label="Connect Wallet" chainStatus="none" showBalance={false} />
+                </div>
                 <Icon><DotsThreeCircleVertical size={24} /></Icon>
 
 

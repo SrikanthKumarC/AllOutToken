@@ -3,17 +3,24 @@
 import React, { useState, useEffect } from "react";
 import { outfit } from "@/app/layout";
 import Image from "next/image";
-import { ArrowDownRight } from "@phosphor-icons/react";
+import { ArrowDownRight, ArrowLeft } from "@phosphor-icons/react";
 import ReactCardFlip from 'react-card-flip';
+
+const AOT_PRICE_IN_USD = 0.001;
+const ETH_PRICE_IN_USD = 2802;
+
 const HeroCard = () => {
     const endDate = new Date("2025-06-01");
     const [isFlipped, setIsFlipped] = useState(false);
-
+    const [amount, setAmount] = useState(0);
     const handleFlip = () => {
         setIsFlipped(!isFlipped);
     };
 
-    // Function to calculate the remaining time
+
+    const DOLLAR_COST = amount * ETH_PRICE_IN_USD;
+    const GET_AMOUNT = DOLLAR_COST * 1000;
+
     const calculateTimeRemaining = () => {
         const now = new Date();
         let diff = endDate.getTime() - now.getTime();
@@ -32,10 +39,8 @@ const HeroCard = () => {
         return { days, hours, minutes, seconds };
     };
 
-    // State to hold the remaining time
     const [timeLeft, setTimeLeft] = useState(calculateTimeRemaining());
 
-    // Update the countdown every second
     useEffect(() => {
         const timer = setInterval(() => {
             setTimeLeft(calculateTimeRemaining());
@@ -146,11 +151,78 @@ const HeroCard = () => {
                 </div>
             </div>
             <div key={"back"} className="relative backdrop-blur-sm bg-opacity-10 rounded-xl p-10 ml-[65px]">
+                <ArrowLeft onClick={handleFlip} className="ml-[30px] cursor-pointer" weight="bold" size={33} />
                 <div className="absolute inset-0 bg-[#ffffff1a] backdrop-blur-sm rounded-xl -z-10"></div>
 
                 <img className="absolute top-0 left-0 -z-20" src="/left-hero-bg.png" alt="AOT" />
                 <img className="absolute top-0 right-0 -z-20" src="/right-hero-bg.png" alt="AOT" />
+                <div className="absolute top-[-65px] left-[-65px]">
+                    <div className="relative w-[130px] h-[130px]">
+                        <div className="absolute inset-0 bg-[#6236ffcc] rounded-full animate-spin-slow backdrop-blur-lg "></div>
+                        <div className="absolute w-full h-full flex items-center justify-center">
+                            <Image
+                                src="/circle-text.svg"
+                                alt="AOT"
+                                width={100}
+                                height={100}
+                                className="animate-spin-slow-reverse"
+                            />
+                            <ArrowDownRight className="absolute cursor-pointer hover:rotate-[-45deg] transition-transform duration-300 top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 font-bold" weight="bold" size={20} />
+                        </div>
+                    </div>
+                </div>
 
+                <div className="flex justify-between mt-4 font-bold">
+                    <p>BALANCE: 0 ETH</p>
+                    <p>1 AOT = {AOT_PRICE_IN_USD} USD</p>
+                </div>
+                <div className={`flex flex-col gap-4 uppercase ${outfit.className}`} >
+
+
+                    <div className="flex justify-between gap-8 mt-4">
+                        <div className="flex gap-2 flex-col w-full cursor-pointer">
+                            <label htmlFor="amount">Select Token</label>
+                            <div className="flex items-center gap-2 p-4 rounded-lg bg-[#35373B] border-[#4B4D53]">
+                                <img src="/eth.png" alt="ETH" className="w-6 h-6" />
+                                <p>ETH</p>
+                            </div>
+                        </div>
+                        <div className="cursor-pointer flex gap-2 flex-col w-full">
+                            <label htmlFor="amount">Amount</label>
+                            <input
+                                className="p-4 w-full font-semibold bg-[#35373B] border-[#4B4D53] rounded-md border-2"
+                                type="text"
+                                value={amount}
+                                onChange={(e) => setAmount(Number(e.target.value))}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between gap-8">
+                        <div className="cursor-pointer flex gap-2 flex-col w-full ">
+                            <label htmlFor="amount">$ Amount</label>
+                            <input disabled className="p-4 w-full bg-[#35373B] border-[#4B4D53] rounded-md border-2" type="text" value={DOLLAR_COST.toFixed(3)} />
+
+                        </div>
+                        <div className="cursor-pointer flex gap-2 flex-col w-full">
+                            <label htmlFor="amount">Get Amount (AOT)</label>
+                            <input disabled className="p-4 w-full bg-[#35373B] border-[#4B4D53] rounded-md border-2" type="text" value={GET_AMOUNT} />
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-between mt-4">
+                    <h1>Bonus</h1>
+                    <p>20%</p>
+                </div>
+                <hr className="border-[#ffffff33] w-full border-l my-2" />
+                <div className="flex justify-between mt-4">
+                    <h1>Total Amount</h1>
+                    <p>{GET_AMOUNT} + {GET_AMOUNT * 0.2} Bonus</p>
+                </div>
+                <hr className="border-[#ffffff33] w-full border-l my-2" />
+
+                <button className="bg-[#1ee8b7] text-black font-semibold
+            w-full uppercase px-10 rounded-full py-4 mt-8 hover:bg-[#1ee8b7]/80 transition-colors duration-300">BUY NOW</button>
             </div>
         </ReactCardFlip>
 

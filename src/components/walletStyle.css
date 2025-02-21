@@ -1,0 +1,5 @@
+[data-testid="rk-connect-button"] {
+  background-color: #2a2d30;
+  border-radius: 100%;
+  color: red !important;
+}

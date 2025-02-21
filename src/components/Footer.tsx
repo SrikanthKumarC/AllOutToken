@@ -1,8 +1,7 @@
-import React from "react";
+'use client'
+import React, { useEffect, useState } from "react";
 import Marquee from "react-fast-marquee";
 
-// List the images in the public/footer folder.
-// Update the filenames as needed.
 const images = [
     "/footer/footer1.png",
     "/footer/footer2.png",
@@ -15,9 +14,18 @@ const images = [
 ];
 
 const Footer = () => {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Only render the marquee once the component has mounted
+    if (!mounted) return null;
+
     return (
         <footer className="footer bg-dark-900">
-            <div className="">
+            <div>
                 <div className="py-6 backdrop-blur-md bg-[#ffffff0d]">
                     <Marquee speed={75}>
                         {images.map((src, index) => (

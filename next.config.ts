@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        hostname: '**',
+      },
+    ],
+  },
+  experimental: {
+    optimizeCss: true,
+  },
 };
 
 export default nextConfig;

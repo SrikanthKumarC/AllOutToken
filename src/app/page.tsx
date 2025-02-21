@@ -1,10 +1,15 @@
 'use client'
 import Header from "@/components/Header";
-  import Image from "next/image";
+import Image from "next/image";
 import { FileText } from "@phosphor-icons/react";
-import Footer from "@/components/Footer";
+import dynamic from "next/dynamic";
+
+const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
+
+
 import { outfit } from "@/app/layout";
 import HeroCard from "@/components/HeroCard";
+
 export default function Home() {
   return (
     <div
