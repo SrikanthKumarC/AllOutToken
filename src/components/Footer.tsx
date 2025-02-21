@@ -18,10 +18,10 @@ const Footer = () => {
     return (
         <footer className="footer bg-dark-900">
             <div className="">
-                <div className="py-6 backdrop-blur-md">
-                    <Marquee>
+                <div className="py-6 backdrop-blur-md bg-[#ffffff0d]">
+                    <Marquee speed={75}>
                         {images.map((src, index) => (
-                            <img className="mr-16" key={index} src={src} alt={`Footer image ${index + 1}`} />
+                            <img className="mr-32" key={index} src={src} alt={`Footer image ${index + 1}`} />
                         ))}
                     </Marquee>
                 </div>

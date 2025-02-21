@@ -13,11 +13,11 @@ export default function Header() {
                 <Image src="/logo.png" alt="logo" width={50} height={50} />
             </div>
             <div className="flex items-center gap-4">
-                <Icon><TelegramLogo /></Icon>
-                <Icon><DiscordLogo /></Icon>
-                <Icon><XLogo /></Icon>
+                <Icon><TelegramLogo size={24} /></Icon>
+                <Icon><DiscordLogo size={24} /></Icon>
+                <Icon><XLogo size={24} /></Icon>
                 <Icon>TODO wallet</Icon>
-                <Icon><DotsThreeCircleVertical /></Icon>
+                <Icon><DotsThreeCircleVertical size={24} /></Icon>
 
 
             </div>

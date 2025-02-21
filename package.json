@@ -12,6 +12,7 @@
     "@phosphor-icons/react": "^2.1.7",
     "next": "15.1.7",
     "react": "^19.0.0",
+    "react-card-flip": "^1.2.3",
     "react-dom": "^19.0.0",
     "react-fast-marquee": "^1.6.5"
   },
