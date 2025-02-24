@@ -89,23 +89,23 @@ const HeroCard = () => {
                     <h1 className="text-white text-lg font-bold mb-4 mt-20 lg:mt-0">PRE-SALE ENDS IN</h1>
                     <div className="flex justify-between items-baseline text-white font-mono">
                         <div className="flex items-baseline">
-                            <span className={`text-5xl font-bold ${outfit.className}`}>{timeLeft.days}</span>
-                            <span className="text-2xl font-bold">d</span>
+                            <span className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold ${outfit.className}`}>{timeLeft.days}</span>
+                            <span className="text-base sm:text-xl lg:text-2xl font-bold">d</span>
                         </div>
-                        <span className={`text-6xl mx-1 ${outfit.className} text-[#ffffff33]`}>:</span>
+                        <span className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl mx-1 ${outfit.className} text-[#ffffff33]`}>:</span>
                         <div>
-                            <span className={`text-5xl font-bold  ${outfit.className}`}>{timeLeft.hours}</span>
-                            <span className="text-2xl font-bold">h</span>
+                            <span className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold ${outfit.className}`}>{timeLeft.hours}</span>
+                            <span className="text-base sm:text-xl lg:text-2xl font-bold">h</span>
                         </div>
-                        <span className={`text-6xl  leading-2 ${outfit.className} text-[#ffffff33]`}>:</span>
+                        <span className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-2 ${outfit.className} text-[#ffffff33]`}>:</span>
                         <div>
-                            <span className={`text-5xl leading-2 font-bold  ${outfit.className}`}>{timeLeft.minutes}</span>
-                            <span className="text-2xl font-bold">m</span>
+                            <span className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-2 font-bold ${outfit.className}`}>{timeLeft.minutes}</span>
+                            <span className="text-base sm:text-xl lg:text-2xl font-bold">m</span>
                         </div>
-                        <span className={`text-6xl  ${outfit.className} text-[#ffffff33]`}>:</span>
+                        <span className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl ${outfit.className} text-[#ffffff33]`}>:</span>
                         <div>
-                            <span className={`text-5xl font-bold  ${outfit.className}`}>{timeLeft.seconds}</span>
-                            <span className="text-2xl font-bold">s</span>
+                            <span className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold ${outfit.className}`}>{timeLeft.seconds}</span>
+                            <span className="text-base sm:text-xl lg:text-2xl font-bold">s</span>
                         </div>
                     </div>
                     {/* Progress Bar */}
