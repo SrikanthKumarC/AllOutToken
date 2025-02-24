@@ -15,9 +15,9 @@ const Header = () => {
     };
     const onClose = () => {
         setOpen(false);
-    };
+    };  
     return (
-        <nav className="flex justify-between items-center p-4">
+        <nav className="w-full flex justify-between items-center p-4">
             <div className="flex items-center">
                 <Image src="/logo.png" alt="logo" width={50} height={50} />
             </div>
@@ -38,7 +38,7 @@ const Header = () => {
                     <Icon><DiscordLogo size={24} /></Icon>
                     <Icon><XLogo size={24} /></Icon>
                 </div>}
-                style={{ background: "#1B2226", color: "white" }} closeIcon={<X size={24}  color='white'/>} styles={{ body: { backgroundColor: "#1B2226" } }} title="" placement="left" onClose={() => setOpen(false)} open={open}>
+                style={{ background: "#1B2226", color: "white" }} closeIcon={<X size={24} color='white' />} styles={{ body: { backgroundColor: "#1B2226" } }} title="" placement="left" onClose={() => setOpen(false)} open={open}>
                 <div className="flex justify-center items-center cursor-pointer bg-gray-400 rounded-full py-4 text-black">
                     <ConnectButton accountStatus="address" label="Connect Wallet" chainStatus="none" showBalance={false} />
                 </div>

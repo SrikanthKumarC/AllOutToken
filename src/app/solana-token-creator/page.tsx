@@ -1,6 +1,13 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ClientOnly from "@/components/ClientOnly";
+import Header from "@/components/Header";
+
+// Add these imports at the top
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
+import { ConnectionProvider, WalletProvider, useWallet } from '@solana/wallet-adapter-react';
+import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { clusterApiUrl } from '@solana/web3.js';
 
 interface TokenFormData {
     name: string;
@@ -17,6 +24,9 @@ interface TokenFormData {
 }
 
 const CreateToken = () => {
+    const { connected, select, publicKey, wallets } = useWallet();
+    const [walletAddress, setWalletAddress] = useState<string | null>(null);
+
     const [showMoreOptions, setShowMoreOptions] = useState(false);
     const [formData, setFormData] = useState<TokenFormData>({
         name: '',
@@ -56,8 +66,32 @@ const CreateToken = () => {
         }));
     };
 
+    useEffect(() => {
+        if (publicKey) {
+            setWalletAddress(publicKey.toString());
+        }
+    }, [publicKey]);
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (!connected) {
+            try {
+                // Find Phantom wallet adapter
+                const phantomWallet = wallets.find(wallet => wallet.adapter.name === 'Phantom');
+                if (phantomWallet) {
+                    await select(phantomWallet.adapter.name);
+                } else {
+                    console.error('Phantom wallet not found');
+                    // Optionally show a message to user to install Phantom
+                    window.open('https://phantom.app/', '_blank');
+                }
+            } catch (error) {
+                console.error('Failed to connect wallet:', error);
+                return;
+            }
+            return; // Return here to prevent form submission before wallet connection
+        }
 
         // Create FormData object for handling file upload
         const submitData = new FormData();
@@ -90,12 +124,31 @@ const CreateToken = () => {
         }
     };
 
+    const renderConnectButton = () => {
+        return (
+            <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-[#3b4bdf] to-[#5c6dff] text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
+            >
+                {connected ? 'Create Token' : 'Connect Wallet'}
+            </button>
+        );
+    };
+
     return (
-        <div className="min-h-screen bg-[#0a0b1e] flex items-center justify-center px-4">
+        <div
+            style={{
+                backgroundImage:
+                    "linear-gradient(rgba(14, 17, 23, 0.698), rgba(14, 17, 23, 0.698)), url('/background.png')",
+            }}
+            className="min-h-screen bg-cover bg-center text-white"
+        >
             <ClientOnly>
-                <div className="bg-[#0f1137] p-8 rounded-[20px] shadow-lg w-full max-w-lg">
+                <Header />
+                <div className="bg-transparent backdrop-blur-10 p-8 border-gray-500 border rounded-[20px] shadow-lg w-full max-w-lg mx-auto mt-24">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Token Name and Symbol in grid */}
+                        <h1 className="text-white text-2xl font-bold">Solana Token Creator</h1>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-white mb-2">Name</label>
@@ -104,7 +157,7 @@ const CreateToken = () => {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
+                                    className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
                                     placeholder="Token Name"
                                     required
                                 />
@@ -116,7 +169,7 @@ const CreateToken = () => {
                                     name="symbol"
                                     value={formData.symbol}
                                     onChange={handleInputChange}
-                                    className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
+                                    className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
                                     placeholder="Token Symbol"
                                     required
                                 />
@@ -132,7 +185,7 @@ const CreateToken = () => {
                                     name="decimals"
                                     value={formData.decimals}
                                     onChange={handleInputChange}
-                                    className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
+                                    className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
                                     required
                                 />
                             </div>
@@ -146,7 +199,7 @@ const CreateToken = () => {
                                         accept="image/*"
                                         className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
                                     />
-                                    <div className="w-full h-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white flex items-center justify-center">
+                                    <div className="w-full h-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                         </svg>
@@ -163,7 +216,7 @@ const CreateToken = () => {
                                 name="supply"
                                 value={formData.supply}
                                 onChange={handleInputChange}
-                                className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
+                                className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
                                 placeholder="Enter token supply"
                                 required
                             />
@@ -176,20 +229,20 @@ const CreateToken = () => {
                                 name="description"
                                 value={formData.description}
                                 onChange={handleInputChange}
-                                className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf] min-h-[100px]"
+                                className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf] min-h-[100px]"
                                 placeholder="Enter token description"
                             />
                         </div>
 
                         {/* Revoke Options */}
-                        <div className="space-y-4">
-                            <div className="bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-6">
-                                <div className="flex items-center justify-between">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-[#2A2D30] border border-[#3e4246] rounded-lg p-6">
+                                <div className="flex flex-col h-full justify-between">
                                     <div>
                                         <h3 className="text-white text-lg">Revoke Freeze</h3>
                                         <p className="text-[#64748b] mt-1">Revoke Freeze allows you to create a liquidity pool</p>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 mt-4">
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
                                                 type="checkbox"
@@ -205,13 +258,13 @@ const CreateToken = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-6">
-                                <div className="flex items-center justify-between">
+                            <div className="bg-[#2A2D30] border border-[#3e4246] rounded-lg p-6">
+                                <div className="flex flex-col h-full justify-between">
                                     <div>
                                         <h3 className="text-white text-lg">Revoke Mint</h3>
                                         <p className="text-[#64748b] mt-1">Mint Authority allows you to increase tokens supply</p>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 mt-4">
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
                                                 type="checkbox"
@@ -255,7 +308,7 @@ const CreateToken = () => {
                                         name="telegramLink"
                                         value={formData.telegramLink}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
+                                        className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
                                         placeholder="(Optional)"
                                     />
                                 </div>
@@ -267,7 +320,7 @@ const CreateToken = () => {
                                         name="websiteLink"
                                         value={formData.websiteLink}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
+                                        className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
                                         placeholder="(Optional)"
                                     />
                                 </div>
@@ -279,7 +332,7 @@ const CreateToken = () => {
                                         name="twitterLink"
                                         value={formData.twitterLink}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[#0a0b1e] border border-[#1f2452] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
+                                        className="w-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white focus:outline-none focus:border-[#3b4bdf]"
                                         placeholder="(Optional)"
                                     />
                                 </div>
@@ -292,12 +345,7 @@ const CreateToken = () => {
 
                         {/* Wrap the Select Wallet button with ClientOnly if it triggers wallet connection */}
                         <ClientOnly>
-                            <button
-                                type="submit"
-                                className="w-full bg-gradient-to-r from-[#3b4bdf] to-[#5c6dff] text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
-                            >
-                                Select Wallet
-                            </button>
+                            {renderConnectButton()}
                         </ClientOnly>
                     </form>
                 </div>
@@ -306,5 +354,24 @@ const CreateToken = () => {
     );
 };
 
-export default CreateToken;
+// Wrap the component with required providers
+const CreateTokenWithWallet = () => {
+    // You can add more wallets to this array
+    const wallets = [new PhantomWalletAdapter()];
+
+    // Configure the network (devnet or mainnet-beta)
+    const endpoint = clusterApiUrl('devnet');
+
+    return (
+        <ConnectionProvider endpoint={endpoint}>
+            <WalletProvider wallets={wallets} autoConnect>
+                <WalletModalProvider>
+                    <CreateToken />
+                </WalletModalProvider>
+            </WalletProvider>
+        </ConnectionProvider>
+    );
+};
+
+export default CreateTokenWithWallet;
 
