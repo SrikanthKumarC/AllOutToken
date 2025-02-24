@@ -1,11 +1,26 @@
 'use client'
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import ClientOnly from "@/components/ClientOnly";
 import Header from "@/components/Header";
-
+import {
+    Keypair,
+    PublicKey,
+    SystemProgram,
+    Transaction,
+} from "@solana/web3.js";
+import {
+    MINT_SIZE,
+    TOKEN_PROGRAM_ID,
+    createInitializeMintInstruction,
+    getMinimumBalanceForRentExemptMint,
+} from "@solana/spl-token";
+import {
+    createCreateMetadataAccountV3Instruction,
+    PROGRAM_ID,
+} from "@metaplex-foundation/mpl-token-metadata";
 // Add these imports at the top
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
-import { ConnectionProvider, WalletProvider, useWallet } from '@solana/wallet-adapter-react';
+import { ConnectionProvider, WalletProvider, useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 
@@ -24,9 +39,9 @@ interface TokenFormData {
 }
 
 const CreateToken = () => {
-    const { connected, select, publicKey, wallets } = useWallet();
-    const [walletAddress, setWalletAddress] = useState<string | null>(null);
-
+    const { connection } = useConnection();
+    const { connected, select, publicKey, wallets, sendTransaction } = useWallet();
+    const [tokenMintAddress, setTokenMintAddress] = useState<string | null>(null);
     const [showMoreOptions, setShowMoreOptions] = useState(false);
     const [formData, setFormData] = useState<TokenFormData>({
         name: '',
@@ -66,22 +81,88 @@ const CreateToken = () => {
         }));
     };
 
-    useEffect(() => {
-        if (publicKey) {
-            setWalletAddress(publicKey.toString());
-        }
-    }, [publicKey]);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!connected) {
-            try {
-                alert('Please connect your wallet');
-            } catch (error) {
-                console.error('Failed to connect wallet:', error);
-            }
+    const createToken = useCallback(async () => {
+        if (!publicKey) {
+            alert({ type: "error", message: `Wallet not connected!` });
+            return;
         }
-    };
+
+        const lamports = await getMinimumBalanceForRentExemptMint(connection);
+        const mintKeypair = Keypair.generate();
+
+        // setIsLoading(true);
+        try {
+            const tx = new Transaction().add(
+                SystemProgram.createAccount({
+                    fromPubkey: publicKey,
+                    newAccountPubkey: mintKeypair.publicKey,
+                    space: MINT_SIZE,
+                    lamports,
+                    programId: TOKEN_PROGRAM_ID,
+                }),
+
+                createInitializeMintInstruction(
+                    mintKeypair.publicKey,
+                    Number(formData.decimals),
+                    publicKey,
+                    publicKey,
+                    TOKEN_PROGRAM_ID,
+                ),
+
+                createCreateMetadataAccountV3Instruction(
+                    {
+                        metadata: (
+                            await PublicKey.findProgramAddress(
+                                [
+                                    Buffer.from("metadata"),
+                                    PROGRAM_ID.toBuffer(),
+                                    mintKeypair.publicKey.toBuffer(),
+                                ],
+                                PROGRAM_ID,
+                            )
+                        )[0],
+                        mint: mintKeypair.publicKey,
+                        mintAuthority: publicKey,
+                        payer: publicKey,
+                        updateAuthority: publicKey,
+                    },
+                    {
+                        createMetadataAccountArgsV3: {
+                            data: {
+                                name: formData.name,
+                                symbol: formData.symbol,
+                                uri: formData.image ? URL.createObjectURL(formData.image) : '',
+                                creators: null,
+                                sellerFeeBasisPoints: 0,
+                                collection: null,
+                                uses: null,
+                            },
+                            isMutable: false,
+                            collectionDetails: null,
+                        },
+                    },
+                ),
+            );
+            const signature = await sendTransaction(tx, connection, {
+                signers: [mintKeypair],
+            });
+            setTokenMintAddress(mintKeypair.publicKey.toString());
+            alert({
+                type: "success",
+                message: "Token creation successful",
+                txid: signature,
+            });
+        } catch (error: any) {
+            alert({ type: "error", message: "Token creation failed" });
+        }
+        // setIsLoading(false);
+    }, [
+        publicKey,
+        connection,
+        formData,
+        sendTransaction,
+    ]);
 
     const renderConnectButton = () => {
         return (
@@ -105,7 +186,7 @@ const CreateToken = () => {
             <ClientOnly>
                 <Header />
                 <div className="bg-transparent backdrop-blur-10 p-8 border-gray-500 border rounded-[20px] shadow-lg w-full max-w-lg mx-auto mt-24">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={createToken} className="space-y-6">
                         {/* Token Name and Symbol in grid */}
                         <h1 className="text-white text-2xl font-bold">Solana Token Creator</h1>
                         <div className="grid grid-cols-2 gap-4">
