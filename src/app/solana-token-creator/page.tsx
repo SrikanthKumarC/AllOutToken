@@ -13,6 +13,8 @@ import {
     TOKEN_PROGRAM_ID,
     createInitializeMintInstruction,
     getMinimumBalanceForRentExemptMint,
+    AuthorityType,
+    createSetAuthorityInstruction,
 } from "@solana/spl-token";
 import {
     createCreateMetadataAccountV3Instruction,
@@ -82,18 +84,21 @@ const CreateToken = () => {
     };
 
 
-    const createToken = useCallback(async () => {
+    const createToken = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (!publicKey) {
-            alert({ type: "error", message: `Wallet not connected!` });
+            alert('Wallet not connected!');
             return;
         }
 
         const lamports = await getMinimumBalanceForRentExemptMint(connection);
         const mintKeypair = Keypair.generate();
 
-        // setIsLoading(true);
         try {
-            const tx = new Transaction().add(
+            const tx = new Transaction();
+
+            // Add account creation and mint initialization
+            tx.add(
                 SystemProgram.createAccount({
                     fromPubkey: publicKey,
                     newAccountPubkey: mintKeypair.publicKey,
@@ -101,15 +106,17 @@ const CreateToken = () => {
                     lamports,
                     programId: TOKEN_PROGRAM_ID,
                 }),
-
                 createInitializeMintInstruction(
                     mintKeypair.publicKey,
                     Number(formData.decimals),
                     publicKey,
-                    publicKey,
+                    publicKey, // Freeze authority
                     TOKEN_PROGRAM_ID,
-                ),
+                )
+            );
 
+            // Add metadata creation
+            tx.add(
                 createCreateMetadataAccountV3Instruction(
                     {
                         metadata: (
@@ -142,21 +149,51 @@ const CreateToken = () => {
                             collectionDetails: null,
                         },
                     },
-                ),
+                )
             );
+
+            // Add revoke instructions if selected
+            if (formData.revokeFreeze) {
+                tx.add(
+                    createSetAuthorityInstruction(
+                        mintKeypair.publicKey,
+                        publicKey,
+                        AuthorityType.FreezeAccount,
+                        null // Setting to null revokes the authority
+                    )
+                );
+            }
+
+            if (formData.revokeMint) {
+                tx.add(
+                    createSetAuthorityInstruction(
+                        mintKeypair.publicKey,
+                        publicKey,
+                        AuthorityType.MintTokens,
+                        null // Setting to null revokes the authority
+                    )
+                );
+            }
+
             const signature = await sendTransaction(tx, connection, {
                 signers: [mintKeypair],
             });
+
             setTokenMintAddress(mintKeypair.publicKey.toString());
             alert({
                 type: "success",
-                message: "Token creation successful",
+                message: `Token created successfully!\nMint address: ${mintKeypair.publicKey.toString()}\n${formData.revokeFreeze ? '✓ Freeze authority revoked\n' : ''
+                    }${formData.revokeMint ? '✓ Mint authority revoked' : ''
+                    }`,
                 txid: signature,
             });
         } catch (error: any) {
-            alert({ type: "error", message: "Token creation failed" });
+            console.error('Error creating token:', error);
+            alert({
+                type: "error",
+                message: `Failed to create token: ${error.message}`
+            });
         }
-        // setIsLoading(false);
     }, [
         publicKey,
         connection,
@@ -185,6 +222,7 @@ const CreateToken = () => {
         >
             <ClientOnly>
                 <Header />
+                {tokenMintAddress && <p>Token created successfully! Mint address: {tokenMintAddress}</p>}
                 <div className="bg-transparent backdrop-blur-10 p-8 border-gray-500 border rounded-[20px] shadow-lg w-full max-w-lg mx-auto mt-24">
                     <form onSubmit={createToken} className="space-y-6">
                         {/* Token Name and Symbol in grid */}
@@ -396,6 +434,7 @@ const CreateToken = () => {
 
 // Wrap the component with required providers
 const CreateTokenWithWallet = () => {
+   
     // You can add more wallets to this array
     const wallets = [new PhantomWalletAdapter()];
 
