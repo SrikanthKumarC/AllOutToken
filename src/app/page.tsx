@@ -1,7 +1,6 @@
 'use client'
 // import Header from "@/components/Header";
 const Header = dynamic(() => import("@/components/Header"), { ssr: false });
-import Image from "next/image";
 import { FileText } from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 

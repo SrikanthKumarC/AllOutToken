@@ -20,7 +20,6 @@ import {
     createCreateMetadataAccountV3Instruction,
     PROGRAM_ID,
 } from "@metaplex-foundation/mpl-token-metadata";
-// Add these imports at the top
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { ConnectionProvider, WalletProvider, useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
@@ -59,6 +58,7 @@ const CreateToken = () => {
         websiteLink: '',
         twitterLink: '',
     });
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     console.log(formData);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -82,6 +82,14 @@ const CreateToken = () => {
             ...prev,
             image: file
         }));
+
+        // Create preview URL for the image
+        if (file) {
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        } else {
+            setImagePreview(null);
+        }
     };
 
 
@@ -98,7 +106,6 @@ const CreateToken = () => {
         try {
             const tx = new Transaction();
 
-            // Add account creation and mint initialization
             tx.add(
                 SystemProgram.createAccount({
                     fromPubkey: publicKey,
@@ -116,7 +123,6 @@ const CreateToken = () => {
                 )
             );
 
-            // Create Associated Token Account for the user
             const associatedTokenAccount = await getAssociatedTokenAddress(
                 mintKeypair.publicKey,
                 publicKey
@@ -131,7 +137,6 @@ const CreateToken = () => {
                 )
             );
 
-            // Mint the supply to the user's associated token account
             const mintAmount = Number(formData.supply) * Math.pow(10, Number(formData.decimals));
             tx.add(
                 createMintToInstruction(
@@ -142,7 +147,6 @@ const CreateToken = () => {
                 )
             );
 
-            // Add metadata creation
             tx.add(
                 createCreateMetadataAccountV3Instruction(
                     {
@@ -179,7 +183,6 @@ const CreateToken = () => {
                 )
             );
 
-            // Add revoke instructions if selected
             if (formData.revokeFreeze) {
                 tx.add(
                     createSetAuthorityInstruction(
@@ -240,15 +243,14 @@ const CreateToken = () => {
                 backgroundImage:
                     "linear-gradient(rgba(14, 17, 23, 0.698), rgba(14, 17, 23, 0.698)), url('/background.png')",
             }}
-            className="min-h-screen bg-cover bg-center text-white"
+            className="min-h-screen px-4 bg-cover bg-center text-white pb-14"
         >
             <ClientOnly>
                 <Header />
-                {tokenMintAddress && <p>Token created successfully! Mint address: {tokenMintAddress}</p>}
-                <div className="bg-transparent backdrop-blur-10 p-8 border-gray-500 border rounded-[20px] shadow-lg w-full max-w-lg mx-auto mt-24">
+                <div className="bg-transparent backdrop-blur-10 p-8 border-gray-500 border rounded-[20px] shadow-lg w-full max-w-lg mx-auto mt-12">
                     <form onSubmit={createToken} className="space-y-6">
-                        {/* Token Name and Symbol in grid */}
-                        <h1 className="text-white text-2xl font-bold">Solana Token Creator</h1>
+                        <h1 className="text-white text-2xl text-center font-bold">Solana Token Creator</h1>
+                        {tokenMintAddress && <p className="text-center">Token created successfully! Mint address: {tokenMintAddress}</p>}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-white mb-2">Name</label>
@@ -276,7 +278,6 @@ const CreateToken = () => {
                             </div>
                         </div>
 
-                        {/* Decimals and Image Upload in grid */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-white mb-2">Decimals</label>
@@ -300,15 +301,21 @@ const CreateToken = () => {
                                         className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
                                     />
                                     <div className="w-full h-full bg-[#2A2D30] border border-[#3e4246] rounded-lg p-3 text-white flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                        </svg>
+                                        {imagePreview ? (
+                                            <div className="flex items-center gap-2">
+                                                <img src={imagePreview} alt="Preview" className="h-6 w-6 object-cover rounded" />
+                                                <span className="text-sm">Image uploaded</span>
+                                            </div>
+                                        ) : (
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                            </svg>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Supply */}
                         <div>
                             <label className="block text-white mb-2">Supply</label>
                             <input
@@ -322,7 +329,6 @@ const CreateToken = () => {
                             />
                         </div>
 
-                        {/* Description */}
                         <div>
                             <label className="block text-white mb-2">Description</label>
                             <textarea
@@ -334,7 +340,6 @@ const CreateToken = () => {
                             />
                         </div>
 
-                        {/* Revoke Options */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-[#2A2D30] border border-[#3e4246] rounded-lg p-6">
                                 <div className="flex flex-col h-full justify-between">
@@ -381,7 +386,6 @@ const CreateToken = () => {
                             </div>
                         </div>
 
-                        {/* Show More Options Button */}
                         <button
                             type="button"
                             onClick={() => setShowMoreOptions(!showMoreOptions)}
@@ -398,7 +402,6 @@ const CreateToken = () => {
                             </svg>
                         </button>
 
-                        {/* Additional Options */}
                         {showMoreOptions && (
                             <div className="space-y-4">
                                 <div>
@@ -443,7 +446,6 @@ const CreateToken = () => {
                             </div>
                         )}
 
-                        {/* Wrap the Select Wallet button with ClientOnly if it triggers wallet connection */}
                         <ClientOnly>
                             {renderConnectButton()}
                         </ClientOnly>
@@ -454,10 +456,8 @@ const CreateToken = () => {
     );
 };
 
-// Wrap the component with required providers
 const CreateTokenWithWallet = () => {
 
-    // You can add more wallets to this array
     const wallets = [new PhantomWalletAdapter()];
 
     // Configure the network (devnet or mainnet-beta)
