@@ -23,8 +23,9 @@ import {
 // Add these imports at the top
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { ConnectionProvider, WalletProvider, useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
+import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createMintToInstruction } from "@solana/spl-token";
 
 interface TokenFormData {
     name: string;
@@ -115,6 +116,32 @@ const CreateToken = () => {
                 )
             );
 
+            // Create Associated Token Account for the user
+            const associatedTokenAccount = await getAssociatedTokenAddress(
+                mintKeypair.publicKey,
+                publicKey
+            );
+
+            tx.add(
+                createAssociatedTokenAccountInstruction(
+                    publicKey,
+                    associatedTokenAccount,
+                    publicKey,
+                    mintKeypair.publicKey
+                )
+            );
+
+            // Mint the supply to the user's associated token account
+            const mintAmount = Number(formData.supply) * Math.pow(10, Number(formData.decimals));
+            tx.add(
+                createMintToInstruction(
+                    mintKeypair.publicKey,
+                    associatedTokenAccount,
+                    publicKey,
+                    mintAmount
+                )
+            );
+
             // Add metadata creation
             tx.add(
                 createCreateMetadataAccountV3Instruction(
@@ -159,7 +186,7 @@ const CreateToken = () => {
                         mintKeypair.publicKey,
                         publicKey,
                         AuthorityType.FreezeAccount,
-                        null // Setting to null revokes the authority
+                        null
                     )
                 );
             }
@@ -170,7 +197,7 @@ const CreateToken = () => {
                         mintKeypair.publicKey,
                         publicKey,
                         AuthorityType.MintTokens,
-                        null // Setting to null revokes the authority
+                        null
                     )
                 );
             }
@@ -180,19 +207,14 @@ const CreateToken = () => {
             });
 
             setTokenMintAddress(mintKeypair.publicKey.toString());
-            alert({
-                type: "success",
-                message: `Token created successfully!\nMint address: ${mintKeypair.publicKey.toString()}\n${formData.revokeFreeze ? '✓ Freeze authority revoked\n' : ''
-                    }${formData.revokeMint ? '✓ Mint authority revoked' : ''
-                    }`,
-                txid: signature,
-            });
+            const successMessage = `Token created and minted successfully!\nMint address: ${mintKeypair.publicKey.toString()}\n${formData.revokeFreeze ? '✓ Freeze authority revoked\n' : ''
+                }${formData.revokeMint ? '✓ Mint authority revoked' : ''}`;
+
+            alert(successMessage);
+            console.log('Transaction signature:', signature);
         } catch (error: any) {
             console.error('Error creating token:', error);
-            alert({
-                type: "error",
-                message: `Failed to create token: ${error.message}`
-            });
+            alert(`Failed to create token: ${error.message}`);
         }
     }, [
         publicKey,
@@ -434,7 +456,7 @@ const CreateToken = () => {
 
 // Wrap the component with required providers
 const CreateTokenWithWallet = () => {
-   
+
     // You can add more wallets to this array
     const wallets = [new PhantomWalletAdapter()];
 
