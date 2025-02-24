@@ -74,53 +74,12 @@ const CreateToken = () => {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
         if (!connected) {
             try {
-                // Find Phantom wallet adapter
-                const phantomWallet = wallets.find(wallet => wallet.adapter.name === 'Phantom');
-                if (phantomWallet) {
-                    await select(phantomWallet.adapter.name);
-                } else {
-                    console.error('Phantom wallet not found');
-                    // Optionally show a message to user to install Phantom
-                    window.open('https://phantom.app/', '_blank');
-                }
+                alert('Please connect your wallet');
             } catch (error) {
                 console.error('Failed to connect wallet:', error);
-                return;
             }
-            return; // Return here to prevent form submission before wallet connection
-        }
-
-        // Create FormData object for handling file upload
-        const submitData = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-            if (value !== null) {
-                submitData.append(key, value);
-            }
-        });
-
-        try {
-            console.log(submitData);
-            return;
-            // Example API call - replace with your actual API endpoint
-            const response = await fetch('/api/create-token', {
-                method: 'POST',
-                body: submitData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create token');
-            }
-
-            const data = await response.json();
-            console.log('Token created successfully:', data);
-
-            // Handle successful submission (e.g., show success message, redirect, etc.)
-        } catch (error) {
-            console.error('Error creating token:', error);
-            // Handle error (e.g., show error message)
         }
     };
 
