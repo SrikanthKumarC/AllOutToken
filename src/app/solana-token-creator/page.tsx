@@ -42,9 +42,11 @@ interface TokenFormData {
 
 const CreateToken = () => {
     const { connection } = useConnection();
-    const { connected, select, publicKey, wallets, sendTransaction } = useWallet();
+    const { connected, publicKey, sendTransaction } = useWallet();
     const [tokenMintAddress, setTokenMintAddress] = useState<string | null>(null);
     const [showMoreOptions, setShowMoreOptions] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
     const [formData, setFormData] = useState<TokenFormData>({
         name: '',
         symbol: '',
@@ -92,18 +94,50 @@ const CreateToken = () => {
         }
     };
 
-
     const createToken = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setUploadError(null);
+        
         if (!publicKey) {
             alert('Wallet not connected!');
             return;
         }
 
-        const lamports = await getMinimumBalanceForRentExemptMint(connection);
-        const mintKeypair = Keypair.generate();
-
         try {
+            // First upload the image and get metadata URI
+            let metadataUrl = '';
+            if (formData.image) {
+                setIsUploading(true);
+                try {
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('image', formData.image);
+                    uploadFormData.append('name', formData.name);
+                    uploadFormData.append('symbol', formData.symbol);
+                    uploadFormData.append('description', formData.description);
+
+                    const uploadResponse = await fetch('/api/upload-image', {
+                        method: 'POST',
+                        body: uploadFormData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        throw new Error('Failed to upload image');
+                    }
+
+                    const response = await uploadResponse.json();
+                    // No need for conversion since API now returns HTTP URLs
+                    metadataUrl = response.metadataUrl;
+                } catch (error) {
+                    setUploadError(error instanceof Error ? error.message : 'Failed to upload image');
+                    setIsUploading(false);
+                    return;
+                }
+                setIsUploading(false);
+            }
+
+            const lamports = await getMinimumBalanceForRentExemptMint(connection);
+            const mintKeypair = Keypair.generate();
+
             const tx = new Transaction();
 
             tx.add(
@@ -170,7 +204,7 @@ const CreateToken = () => {
                             data: {
                                 name: formData.name,
                                 symbol: formData.symbol,
-                                uri: formData.image ? URL.createObjectURL(formData.image) : '',
+                                uri: metadataUrl,
                                 creators: null,
                                 sellerFeeBasisPoints: 0,
                                 collection: null,
@@ -215,9 +249,13 @@ const CreateToken = () => {
 
             alert(successMessage);
             console.log('Transaction signature:', signature);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error creating token:', error);
-            alert(`Failed to create token: ${error.message}`);
+            if (error instanceof Error) {
+                alert(`Failed to create token: ${error.message}`);
+            } else {
+                alert('Failed to create token: An unknown error occurred.');
+            }
         }
     }, [
         publicKey,
@@ -230,10 +268,20 @@ const CreateToken = () => {
         return (
             <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-[#3b4bdf] to-[#5c6dff] text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
+                disabled={isUploading}
+                className="w-full bg-gradient-to-r from-[#3b4bdf] to-[#5c6dff] text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {connected ? 'Create Token' : 'Connect Wallet'}
+                {isUploading ? 'Uploading Image...' : connected ? 'Create Token' : 'Connect Wallet'}
             </button>
+        );
+    };
+
+    const renderError = () => {
+        if (!uploadError) return null;
+        return (
+            <div className="text-red-500 text-sm mt-2 text-center">
+                {uploadError}
+            </div>
         );
     };
 
@@ -251,6 +299,7 @@ const CreateToken = () => {
                     <form onSubmit={createToken} className="space-y-6">
                         <h1 className="text-white text-2xl text-center font-bold">Solana Token Creator</h1>
                         {tokenMintAddress && <p className="text-center">Token created successfully! Mint address: {tokenMintAddress}</p>}
+                        {renderError()}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-white mb-2">Name</label>
