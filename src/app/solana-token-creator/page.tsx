@@ -97,7 +97,7 @@ const CreateToken = () => {
     const createToken = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setUploadError(null);
-        
+
         if (!publicKey) {
             alert('Wallet not connected!');
             return;
@@ -407,7 +407,7 @@ const CreateToken = () => {
                                             />
                                             <div className="w-12 h-7 bg-[#0f1137] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#3b4bdf]"></div>
                                         </label>
-                                        <span className="text-white whitespace-nowrap">(0.1 SOL)</span>
+                                        <span className="text-white whitespace-nowrap">(0.0 SOL)</span>
                                     </div>
                                 </div>
                             </div>
@@ -429,7 +429,7 @@ const CreateToken = () => {
                                             />
                                             <div className="w-12 h-7 bg-[#0f1137] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#3b4bdf]"></div>
                                         </label>
-                                        <span className="text-white whitespace-nowrap">(0.1 SOL)</span>
+                                        <span className="text-white whitespace-nowrap">(0.0 SOL)</span>
                                     </div>
                                 </div>
                             </div>
