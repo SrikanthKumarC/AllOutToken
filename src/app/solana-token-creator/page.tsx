@@ -25,6 +25,7 @@ import { ConnectionProvider, WalletProvider, useWallet, useConnection } from '@s
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createMintToInstruction } from "@solana/spl-token";
+import { Modal } from "antd";
 
 interface TokenFormData {
     name: string;
@@ -40,7 +41,17 @@ interface TokenFormData {
     twitterLink: string;
 }
 
-const CreateToken = () => {
+const CreateToken: React.FC = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+    const handleOk = () => {
+        setIsModalOpen(false);
+    };
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
     const { connection } = useConnection();
     const { connected, publicKey, sendTransaction } = useWallet();
     const [tokenMintAddress, setTokenMintAddress] = useState<string | null>(null);
@@ -268,11 +279,14 @@ const CreateToken = () => {
         return (
             <button
                 type="submit"
-                disabled={isUploading}
+                onClick={showModal}
+                // disabled={isUploading}
                 className="w-full bg-gradient-to-r from-[#3b4bdf] to-[#5c6dff] text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {isUploading ? 'Uploading Image...' : connected ? 'Create Token' : 'Connect Wallet'}
+                {/* {isUploading ? 'Uploading Image...' : connected ? 'Create Token' : 'Connect Wallet'} */}
+                Create Token
             </button>
+
         );
     };
 
@@ -295,6 +309,10 @@ const CreateToken = () => {
         >
             <ClientOnly>
                 <Header />
+                <Modal className="dark-modal" title="Alert" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+                    <p className="text-center text-3xl">Under Maintenance</p>
+                    <p className="text-center text-lg">Our site is currently under maintenance.<br /> We'll be back soon!</p>
+                </Modal>
                 <div className="bg-transparent backdrop-blur-10 p-8 border-gray-500 border rounded-[20px] shadow-lg w-full max-w-lg mx-auto mt-12">
                     <form onSubmit={createToken} className="space-y-6">
                         <h1 className="text-white text-2xl text-center font-bold">Solana Token Creator</h1>

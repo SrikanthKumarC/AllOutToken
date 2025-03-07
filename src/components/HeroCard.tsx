@@ -5,11 +5,13 @@ import { outfit } from "@/app/layout";
 import Image from "next/image";
 import { ArrowDownRight, ArrowLeft } from "@phosphor-icons/react";
 import ReactCardFlip from 'react-card-flip';
+import { Modal } from "antd";   
 
 const AOT_PRICE_IN_USD = 0.001;
 const ETH_PRICE_IN_USD = 2802;
 
-const HeroCard = () => {
+const HeroCard: React.FC = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const endDate = new Date("2025-06-01");
     const [isFlipped, setIsFlipped] = useState(false);
     const [amount, setAmount] = useState(0);
@@ -20,6 +22,18 @@ const HeroCard = () => {
         minutes: "00",
         seconds: "00",
     });
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleOk = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
 
     const handleFlip = () => {
         setIsFlipped(!isFlipped);
@@ -232,8 +246,12 @@ const HeroCard = () => {
                 </div>
                 <hr className="border-[#ffffff33] w-full border-l my-2" />
 
-                <button className="bg-[#1ee8b7] text-black font-semibold
+                <button onClick={showModal} className="bg-[#1ee8b7] text-black font-semibold
             w-full uppercase px-10 rounded-full py-4 mt-8 hover:bg-[#1ee8b7]/80 transition-colors duration-300">BUY NOW</button>
+                <Modal className="dark-modal" title="Alert" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+                    <p className="text-center text-3xl">Under Maintenance</p>
+                    <p className="text-center text-lg">Our site is currently under maintenance.<br /> We'll be back soon!</p>
+                </Modal>
             </div>
         </ReactCardFlip>
     )

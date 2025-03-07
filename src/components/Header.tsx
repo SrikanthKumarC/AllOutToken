@@ -31,7 +31,7 @@ const Header = () => {
                 <Icon><DiscordLogo size={24} /></Icon>
                 <Icon><XLogo size={24} /></Icon>
                 <Link href="/solana-token-creator" className="hidden lg:block hover:bg-[#2b2f33] bg-[#2A2D30] p-4 rounded-full">Create Token</Link>
-                <ConnectWalletButton />
+                {/* <ConnectWalletButton /> */}
                 <div className="rounded-full lg:hidden flex transition-all duration-300 hover:bg-[#2b2f33] bg-[#2A2D30] cursor-pointer p-4 px-4 items-center justify-center">
                     <img src="/menu.svg" alt="menu" className="w-6 h-6" onClick={showDrawer} />
                 </div>
@@ -52,10 +52,10 @@ const Header = () => {
             >
                 <div className="flex flex-col gap-4">
                     <Link href="/" className="block hover:bg-[#2b2f33] bg-[#2A2D30] p-4 rounded-full">Home</Link>
-                        <Link href="/solana-token-creator" className="block hover:bg-[#2b2f33] bg-[#2A2D30] p-4 rounded-full">Create Token</Link>
-                    <div className="flex justify-center items-center cursor-pointer hover:bg-[#2b2f33] bg-[#2A2D30] rounded-full py-4 text-black">
+                    <Link href="/solana-token-creator" className="block hover:bg-[#2b2f33] bg-[#2A2D30] p-4 rounded-full">Create Token</Link>
+                    {/* <div className="flex justify-center items-center cursor-pointer hover:bg-[#2b2f33] bg-[#2A2D30] rounded-full py-4 text-black">
                         <ConnectWalletButton />
-                    </div>
+                    </div> */}
                 </div>
             </Drawer>
         </nav>
